@@ -99,41 +99,35 @@ QINIU_BUCKET_DOMAIN = env('DJANGO_QINIU_BUCKET_DOMAIN')
 QINIU_SECURE_URL = env.bool('DJANGO_QINIU_SECURE_URL', default=False)
 
 if QINIU_SECURE_URL:
-    QINIU_PREFIX = 'https://'
+    QINIU_PREFIX_URL = 'https://'
 else:
-    QINIU_PREFIX = 'http://'
+    QINIU_PREFIX_URL = 'http://'
 
 # URL that handles the media served from MEDIA_ROOT, used for managing
 # stored files.
 {% if cookiecutter.use_whitenoise == 'y' -%}
-MEDIA_URL = 'https://s3.amazonaws.com/%s/' % AWS_STORAGE_BUCKET_NAME
-{% else %}
-#  See:http://stackoverflow.com/questions/10390244/
-from storages.backends.s3boto import S3BotoStorage
-StaticRootS3BotoStorage = lambda: S3BotoStorage(location='static')
-MediaRootS3BotoStorage = lambda: S3BotoStorage(location='media')
-DEFAULT_FILE_STORAGE = 'config.settings.production.MediaRootS3BotoStorage'
 
-MEDIA_URL = 'https://s3.amazonaws.com/%s/media/' % AWS_STORAGE_BUCKET_NAME
+{% else %}
+DEFAULT_FILE_STORAGE = 'qiniustorage.backends.QiniuPrivateStorage'
 {%- endif %}
+MEDIA_URL = QINIU_PREFIX_URL + QINIU_BUCKET_DOMAIN + '/media/'
 
 # Static Assets
 # ------------------------
 {% if cookiecutter.use_whitenoise == 'y' -%}
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 {% else %}
-STATIC_URL = 'https://s3.amazonaws.com/%s/static/' % AWS_STORAGE_BUCKET_NAME
-STATICFILES_STORAGE = 'config.settings.production.StaticRootS3BotoStorage'
-# See: https://github.com/antonagestam/collectfast
-# For Django 1.7+, 'collectfast' should come before
-# 'django.contrib.staticfiles'
-AWS_PRELOAD_METADATA = True
-INSTALLED_APPS = ['collectfast', ] + INSTALLED_APPS
+
+# 七牛中的位置
+STATIC_ROOT = 'static'
+STATIC_URL = QINIU_PREFIX_URL + QINIU_BUCKET_DOMAIN + '/%s/' % STATIC_ROOT
+STATICFILES_STORAGE = 'qiniustorage.backends.QiniuStaticStorage'
+
 {%- endif %}
 {% if cookiecutter.use_compressor == 'y'-%}
 # COMPRESSOR
 # ------------------------------------------------------------------------------
-COMPRESS_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+COMPRESS_STORAGE = 'qiniustorage.backends.QiniuStaticStorage'
 COMPRESS_URL = STATIC_URL
 COMPRESS_ENABLED = env.bool('COMPRESS_ENABLED', default=True)
 {%- endif %}
