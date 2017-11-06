@@ -1,5 +1,5 @@
 """
-Production Configurations
+Production settings for {{cookiecutter.project_name}} project.
 
 {% if cookiecutter.use_whitenoise == 'y' -%}
 - Use WhiteNoise for serving static files{% endif %}
@@ -107,6 +107,17 @@ else:
 # URL that handles the media served from MEDIA_ROOT, used for managing
 # stored files.
 {% if cookiecutter.use_whitenoise == 'y' -%}
+<<<<<<< HEAD
+=======
+MEDIA_URL = 'https://s3.amazonaws.com/%s/' % AWS_STORAGE_BUCKET_NAME
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+{% else %}
+#  See:http://stackoverflow.com/questions/10390244/
+from storages.backends.s3boto3 import S3Boto3Storage
+StaticRootS3BotoStorage = lambda: S3Boto3Storage(location='static')  # noqa
+MediaRootS3BotoStorage = lambda: S3Boto3Storage(location='media')  # noqa
+DEFAULT_FILE_STORAGE = 'config.settings.production.MediaRootS3BotoStorage'
+>>>>>>> upstream/master
 
 {% else %}
 DEFAULT_FILE_STORAGE = 'qiniustorage.backends.QiniuPrivateStorage'
@@ -145,7 +156,7 @@ ANYMAIL = {
     'MAILGUN_API_KEY': env('DJANGO_MAILGUN_API_KEY'),
     'MAILGUN_SENDER_DOMAIN': env('MAILGUN_SENDER_DOMAIN')
 }
-EMAIL_BACKEND = 'anymail.backends.mailgun.MailgunBackend'
+EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
 
 # TEMPLATE CONFIGURATION
 # ------------------------------------------------------------------------------
