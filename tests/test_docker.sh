@@ -4,7 +4,7 @@
 # sh tests/test_docker.sh
 
 # install test requirements
-pip install -r requirements.txt
+pip install -r requirements.txt -i https://pypi.douban.com/simple
 
 # create a cache directory
 mkdir -p .cache/docker
